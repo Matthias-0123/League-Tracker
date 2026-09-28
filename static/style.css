@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #111827;
+    color: white;
+}
+
+.container {
+    width: 500px;
+    margin: 100px auto;
+    text-align: center;
+}
+
+input {
+    padding: 10px;
+    margin: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.player-card {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #1f2937;
+    border-radius: 10px;
+}
+
+.error {
+    color: red;
+}

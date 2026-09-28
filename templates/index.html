@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>League Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>League Tracker</h1>
+
+        <form method="POST">
+
+            <input
+                type="text"
+                name="game_name"
+                placeholder="Riot username"
+                required
+            >
+
+            <input
+                type="text"
+                name="tag_line"
+                placeholder="Tag"
+                required
+            >
+
+            <button type="submit">
+                Search Player
+            </button>
+
+        </form>
+
+
+        {% if error %}
+            <p class="error">
+                {{ error }}
+            </p>
+        {% endif %}
+
+
+        {% if player %}
+
+            <div class="player-card">
+
+                <h2>
+                    {{ player.name }}#{{ player.tag }}
+                </h2>
+
+                <p>
+                    Rank:
+                    {{ player.tier }}
+                    {{ player.rank }}
+                </p>
+
+                <p>
+                    LP:
+                    {{ player.lp }}
+                </p>
+
+                <p>
+                    Wins:
+                    {{ player.wins }}
+                </p>
+
+                <p>
+                    Losses:
+                    {{ player.losses }}
+                </p>
+
+                <p>
+                    Winrate:
+                    {{ player.winrate }}%
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>
