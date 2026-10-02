@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>League Tracker</title>
@@ -38,14 +39,17 @@
 
 
         {% if error %}
+
             <p class="error">
                 {{ error }}
             </p>
+
         {% endif %}
 
 
         {% if player %}
 
+            <!-- PLAYER INFORMATION -->
             <div class="player-card">
 
                 <h2>
@@ -80,9 +84,72 @@
 
             </div>
 
+
+            <!-- MATCH HISTORY -->
+
+            <h2>Recent Matches</h2>
+
+            <div class="match-history">
+
+                {% for match in matches %}
+
+                    <div class="match">
+
+                        <!-- Champion picture -->
+                        <img
+                            src="{{ match.champion_image }}"
+                            alt="{{ match.champion }}"
+                            width="70"
+                            height="70"
+                        >
+
+                        <!-- Champion name -->
+                        <h3>
+                            {{ match.champion }}
+                        </h3>
+
+
+                        <!-- Kills / Deaths / Assists -->
+                        <p>
+                            {{ match.kills }}
+                            /
+                            {{ match.deaths }}
+                            /
+                            {{ match.assists }}
+                        </p>
+
+
+                        <!-- KDA -->
+                        <p>
+                            KDA: {{ match.kda }}
+                        </p>
+
+
+                        <!-- Win or loss -->
+                        {% if match.win %}
+
+                            <p class="win">
+                                WIN
+                            </p>
+
+                        {% else %}
+
+                            <p class="loss">
+                                LOSS
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
         {% endif %}
 
     </div>
 
 </body>
+
 </html>
