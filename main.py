@@ -24,7 +24,6 @@ def home():
 
     if request.method == "POST":
 
-        # Naam en tag uit het formulier halen
         game_name = request.form["game_name"]
         tag_line = request.form["tag_line"]
 
@@ -122,9 +121,7 @@ def home():
                     win = participant["win"]
 
 
-                    # -------------------------
                     # KDA BEREKENEN
-                    # -------------------------
 
                     if deaths == 0:
                         kda = kills + assists
@@ -132,10 +129,7 @@ def home():
                         kda = (kills + assists) / deaths
 
 
-                    # -------------------------
                     # CHAMPION IMAGE
-                    # -------------------------
-
                     champion_image = (
                         "https://ddragon.leagueoflegends.com/"
                         "cdn/16.18.1/img/champion/"
@@ -143,9 +137,7 @@ def home():
                     )
 
 
-                    # -------------------------
                     # MATCH OPSLAAN
-                    # -------------------------
 
                     match = {
                         "champion": champion,

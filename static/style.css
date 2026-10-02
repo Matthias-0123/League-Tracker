@@ -32,14 +32,12 @@ button {
 }
 
 
-/* MATCH HISTORY */
 
 .match-history {
     margin-top: 20px;
 }
 
 
-/* Eén match */
 .match {
     display: flex;
     align-items: center;
@@ -57,7 +55,6 @@ button {
 }
 
 
-/* Champion afbeelding */
 .match img {
     width: 70px;
     height: 70px;
@@ -66,26 +63,22 @@ button {
 }
 
 
-/* Champion naam */
 .match h3 {
     width: 100px;
 }
 
 
-/* KDA informatie */
 .match p {
     margin: 5px;
 }
 
 
-/* Win */
 .win {
     color: #4ade80;
     font-weight: bold;
 }
 
 
-/* Loss */
 .loss {
     color: #f87171;
     font-weight: bold;
