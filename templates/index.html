@@ -5,127 +5,151 @@
     <meta charset="UTF-8">
     <title>League Tracker</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>League Tracker</h1>
-
-        <form method="POST">
-
-            <input
-                type="text"
-                name="game_name"
-                placeholder="Riot username"
-                required
-            >
-
-            <input
-                type="text"
-                name="tag_line"
-                placeholder="Tag"
-                required
-            >
-
-            <button type="submit">
-                Search Player
-            </button>
-
-        </form>
+    <h1>League Tracker</h1>
 
 
-        {% if error %}
+    <!-- SEARCH -->
 
-            <p class="error">
-                {{ error }}
+    <form method="POST">
+
+        <input
+            type="text"
+            name="game_name"
+            placeholder="Riot username"
+            required
+        >
+
+        <input
+            type="text"
+            name="tag_line"
+            placeholder="Tag"
+            required
+        >
+
+        <button type="submit">
+            Search Player
+        </button>
+
+    </form>
+
+
+    <!-- ERROR -->
+
+    {% if error %}
+
+        <p class="error">
+            {{ error }}
+        </p>
+
+    {% endif %}
+
+
+    {% if player %}
+
+
+        <!-- PLAYER INFORMATION -->
+
+        <div class="player-card">
+
+            <h2>
+                {{ player.name }}#{{ player.tag }}
+            </h2>
+
+            <p>
+                Rank:
+                {{ player.tier }}
+                {{ player.rank }}
             </p>
 
-        {% endif %}
+            <p>
+                LP:
+                {{ player.lp }}
+            </p>
+
+            <p>
+                Wins:
+                {{ player.wins }}
+            </p>
+
+            <p>
+                Losses:
+                {{ player.losses }}
+            </p>
+
+            <p>
+                Winrate:
+                {{ player.winrate }}%
+            </p>
+
+        </div>
 
 
-        {% if player %}
+        <!-- MATCH HISTORY -->
 
-            <!-- PLAYER INFORMATION -->
-            <div class="player-card">
-
-                <h2>
-                    {{ player.name }}#{{ player.tag }}
-                </h2>
-
-                <p>
-                    Rank:
-                    {{ player.tier }}
-                    {{ player.rank }}
-                </p>
-
-                <p>
-                    LP:
-                    {{ player.lp }}
-                </p>
-
-                <p>
-                    Wins:
-                    {{ player.wins }}
-                </p>
-
-                <p>
-                    Losses:
-                    {{ player.losses }}
-                </p>
-
-                <p>
-                    Winrate:
-                    {{ player.winrate }}%
-                </p>
-
-            </div>
+        <h2>
+            Recent Matches
+        </h2>
 
 
-            <!-- MATCH HISTORY -->
+        <div class="match-history">
 
-            <h2>Recent Matches</h2>
 
-            <div class="match-history">
+            {% for match in matches %}
 
-                {% for match in matches %}
 
-                    <div class="match">
+                <div class="match">
 
-                        <!-- Champion picture -->
+
+                    <!-- MAIN MATCH INFORMATION -->
+
+                    <div class="match-main">
+
+
+                        <!-- CHAMPION IMAGE -->
+
                         <img
+                            class="champion-image"
                             src="{{ match.champion_image }}"
                             alt="{{ match.champion }}"
-                            width="70"
-                            height="70"
                         >
 
-                        <!-- Champion name -->
-                        <h3>
-                            {{ match.champion }}
-                        </h3>
+
+                        <!-- MATCH STATS -->
+
+                        <div class="match-stats">
+
+                            <h3>
+                                {{ match.champion }}
+                            </h3>
+
+                            <p>
+                                {{ match.kills }}
+                                /
+                                {{ match.deaths }}
+                                /
+                                {{ match.assists }}
+                            </p>
+
+                            <p>
+                                KDA:
+                                {{ match.kda }}
+                            </p>
+
+                        </div>
 
 
-                        <!-- Kills / Deaths / Assists -->
-                        <p>
-                            {{ match.kills }}
-                            /
-                            {{ match.deaths }}
-                            /
-                            {{ match.assists }}
-                        </p>
+                        <!-- WIN / LOSS -->
 
-
-                        <!-- KDA -->
-                        <p>
-                            KDA: {{ match.kda }}
-                        </p>
-
-
-                        <!-- Win or loss -->
                         {% if match.win %}
 
                             <p class="win">
@@ -140,15 +164,226 @@
 
                         {% endif %}
 
+
                     </div>
 
-                {% endfor %}
 
-            </div>
+                    <!-- MATCH DETAILS DROPDOWN -->
 
-        {% endif %}
+                    <details class="match-details">
 
-    </div>
+                        <summary>
+                            Show match details
+                        </summary>
+
+
+                        <!-- YOUR ITEMS -->
+
+                        <h4>
+                            Your Items
+                        </h4>
+
+
+                        <div class="items">
+
+                            {% for item in match["items"] %}
+
+                                <img
+                                    src="{{ item }}"
+                                    alt="Item"
+                                >
+
+                            {% endfor %}
+
+
+                            {% if not match["items"] %}
+
+                                <p>
+                                    No items
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ALL PLAYERS -->
+
+                        <h4>
+                            Players
+                        </h4>
+
+
+                        <div class="teams">
+
+
+                            <!-- BLUE TEAM -->
+
+                            <div class="team">
+
+                                <h4>
+                                    Blue Team
+                                </h4>
+
+
+                                {% for player in match.players %}
+
+                                    {% if player.team == 100 %}
+
+
+                                        <div class="match-player">
+
+
+                                            <!-- CHAMPION IMAGE -->
+
+                                            <img
+                                                src="{{ player.champion_image }}"
+                                                alt="{{ player.champion }}"
+                                            >
+
+
+                                            <!-- PLAYER NAME -->
+
+                                            <div class="player-name">
+
+                                                <strong>
+                                                    {{ player.name }}
+                                                </strong>
+
+                                                {% if player.tag %}
+
+                                                    <span>
+                                                        #{{ player.tag }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <!-- CHAMPION -->
+
+                                            <span class="player-champion">
+                                                {{ player.champion }}
+                                            </span>
+
+
+                                            <!-- KDA -->
+
+                                            <span class="player-kda">
+
+                                                {{ player.kills }}
+                                                /
+                                                {{ player.deaths }}
+                                                /
+                                                {{ player.assists }}
+
+                                            </span>
+
+
+                                        </div>
+
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+
+                            <!-- RED TEAM -->
+
+                            <div class="team">
+
+                                <h4>
+                                    Red Team
+                                </h4>
+
+
+                                {% for player in match.players %}
+
+                                    {% if player.team == 200 %}
+
+
+                                        <div class="match-player">
+
+
+                                            <!-- CHAMPION IMAGE -->
+
+                                            <img
+                                                src="{{ player.champion_image }}"
+                                                alt="{{ player.champion }}"
+                                            >
+
+
+                                            <!-- PLAYER NAME -->
+
+                                            <div class="player-name">
+
+                                                <strong>
+                                                    {{ player.name }}
+                                                </strong>
+
+                                                {% if player.tag %}
+
+                                                    <span>
+                                                        #{{ player.tag }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <!-- CHAMPION -->
+
+                                            <span class="player-champion">
+                                                {{ player.champion }}
+                                            </span>
+
+
+                                            <!-- KDA -->
+
+                                            <span class="player-kda">
+
+                                                {{ player.kills }}
+                                                /
+                                                {{ player.deaths }}
+                                                /
+                                                {{ player.assists }}
+
+                                            </span>
+
+
+                                        </div>
+
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+
+                        </div>
+
+
+                    </details>
+
+
+                </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+    {% endif %}
+
+
+</div>
 
 </body>
 

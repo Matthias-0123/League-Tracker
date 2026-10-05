@@ -30,13 +30,20 @@ def home():
 
         # SPELER OPZOEKEN
 
-        account_url = f"https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{game_name}/{tag_line}"
+        account_url = (
+            f"https://europe.api.riotgames.com/"
+            f"riot/account/v1/accounts/by-riot-id/"
+            f"{game_name}/{tag_line}"
+        )
 
         response = requests.get(account_url, headers=headers)
 
         if response.status_code != 200:
             error = "Speler kon niet gevonden worden."
-            return render_template("index.html", error=error)
+            return render_template(
+                "index.html",
+                error=error
+            )
 
         account_data = response.json()
 
@@ -45,9 +52,15 @@ def home():
 
         # RANK OPHALEN
 
-        rank_url = f"https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}"
+        rank_url = (
+            f"https://euw1.api.riotgames.com/"
+            f"lol/league/v4/entries/by-puuid/{puuid}"
+        )
 
-        rank_response = requests.get(rank_url, headers=headers)
+        rank_response = requests.get(
+            rank_url,
+            headers=headers
+        )
 
         rank_data = rank_response.json()
 
@@ -55,9 +68,16 @@ def home():
 
             if queue["queueType"] == "RANKED_SOLO_5x5":
 
-                total_games = queue["wins"] + queue["losses"]
+                total_games = (
+                    queue["wins"] +
+                    queue["losses"]
+                )
 
-                winrate = queue["wins"] / total_games * 100
+                winrate = (
+                    queue["wins"] /
+                    total_games *
+                    100
+                )
 
                 player_data = {
                     "name": game_name,
@@ -101,12 +121,55 @@ def home():
                 headers=headers
             )
 
+            if match_response.status_code != 200:
+                continue
+
             match_data = match_response.json()
 
-
-            # SPELER IN MATCH VINDEN
-
             participants = match_data["info"]["participants"]
+
+
+            # ALLE 10 SPELERS OPSLAAN
+
+            players = []
+
+            for participant in participants:
+
+                player_champion = participant["championName"]
+
+                player = {
+                    "name": participant.get(
+                        "riotIdGameName",
+                        participant.get(
+                            "summonerName",
+                            "Unknown"
+                        )
+                    ),
+
+                    "tag": participant.get(
+                        "riotIdTagline",
+                        ""
+                    ),
+
+                    "champion": player_champion,
+
+                    "champion_image": (
+                        "https://ddragon.leagueoflegends.com/"
+                        "cdn/16.18.1/img/champion/"
+                        f"{player_champion}.png"
+                    ),
+
+                    "kills": participant["kills"],
+                    "deaths": participant["deaths"],
+                    "assists": participant["assists"],
+
+                    "team": participant["teamId"]
+                }
+
+                players.append(player)
+
+
+            # GEZOCHTE SPELER IN MATCH VINDEN
 
             for participant in participants:
 
@@ -126,10 +189,13 @@ def home():
                     if deaths == 0:
                         kda = kills + assists
                     else:
-                        kda = (kills + assists) / deaths
+                        kda = (
+                            kills + assists
+                        ) / deaths
 
 
                     # CHAMPION IMAGE
+
                     champion_image = (
                         "https://ddragon.leagueoflegends.com/"
                         "cdn/16.18.1/img/champion/"
@@ -137,19 +203,49 @@ def home():
                     )
 
 
+                    # ITEMS VAN DE GEZOCHTE SPELER
+
+                    items = []
+
+                    for item_number in range(7):
+
+                        item_id = participant[
+                            f"item{item_number}"
+                        ]
+
+                        if item_id != 0:
+
+                            item_image = (
+                                "https://ddragon.leagueoflegends.com/"
+                                "cdn/16.18.1/img/item/"
+                                f"{item_id}.png"
+                            )
+
+                            items.append(item_image)
+
+
                     # MATCH OPSLAAN
 
                     match = {
                         "champion": champion,
                         "champion_image": champion_image,
+
                         "kills": kills,
                         "deaths": deaths,
                         "assists": assists,
+
                         "kda": round(kda, 2),
-                        "win": win
+
+                        "win": win,
+
+                        "items": items,
+
+                        "players": players
                     }
 
                     matches.append(match)
+
+                    break
 
 
     return render_template(
