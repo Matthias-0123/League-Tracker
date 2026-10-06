@@ -1,260 +1,108 @@
-import os
-import requests
-from flask import Flask, render_template, request
-from dotenv import load_dotenv
+import uvicorn
+
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from riot_api import get_account, get_rank, get_match_ids, get_match
+from match_data import make_match
 
 
-load_dotenv()
+app = FastAPI()
 
-app = Flask(__name__)
+templates = Jinja2Templates(directory="templates")
 
-api_key = os.getenv("RIOT_API_KEY")
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static"
+)
 
-headers = {
-    "X-Riot-Token": api_key
-}
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "player": None,
+            "matches": [],
+            "error": None
+        }
+    )
 
 
-@app.route("/", methods=["GET", "POST"])
-def home():
+@app.post("/", response_class=HTMLResponse)
+def search_player(
+    request: Request,
+    game_name: str = Form(...),
+    tag_line: str = Form(...)
+):
+    matches = []
+
+    # Gets the Riot account first because we need the puuid for the other requests
+    account = get_account(game_name, tag_line)
+
+    if account is None:
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "player": None,
+                "matches": [],
+                "error": "Speler kon niet gevonden worden."
+            }
+        )
+
+    puuid = account["puuid"]
+
+    # Gets the ranked information that is shown above the match history
+    rank = get_rank(puuid)
 
     player_data = None
-    matches = []
-    error = None
 
-    if request.method == "POST":
-
-        game_name = request.form["game_name"]
-        tag_line = request.form["tag_line"]
-
-
-        # SPELER OPZOEKEN
-
-        account_url = (
-            f"https://europe.api.riotgames.com/"
-            f"riot/account/v1/accounts/by-riot-id/"
-            f"{game_name}/{tag_line}"
-        )
-
-        response = requests.get(account_url, headers=headers)
-
-        if response.status_code != 200:
-            error = "Speler kon niet gevonden worden."
-            return render_template(
-                "index.html",
-                error=error
-            )
-
-        account_data = response.json()
-
-        puuid = account_data["puuid"]
-
-
-        # RANK OPHALEN
-
-        rank_url = (
-            f"https://euw1.api.riotgames.com/"
-            f"lol/league/v4/entries/by-puuid/{puuid}"
-        )
-
-        rank_response = requests.get(
-            rank_url,
-            headers=headers
-        )
-
-        rank_data = rank_response.json()
-
-        for queue in rank_data:
-
-            if queue["queueType"] == "RANKED_SOLO_5x5":
-
-                total_games = (
-                    queue["wins"] +
-                    queue["losses"]
-                )
-
-                winrate = (
-                    queue["wins"] /
-                    total_games *
-                    100
-                )
-
-                player_data = {
-                    "name": game_name,
-                    "tag": tag_line,
-                    "tier": queue["tier"],
-                    "rank": queue["rank"],
-                    "lp": queue["leaguePoints"],
-                    "wins": queue["wins"],
-                    "losses": queue["losses"],
-                    "winrate": round(winrate, 2)
-                }
-
-
-        # LAATSTE 10 MATCHES
-
-        match_history_url = (
-            f"https://europe.api.riotgames.com/"
-            f"lol/match/v5/matches/by-puuid/{puuid}/ids"
-            f"?start=0&count=10"
-        )
-
-        match_history_response = requests.get(
-            match_history_url,
-            headers=headers
-        )
-
-        match_ids = match_history_response.json()
-
-
-        # ELKE MATCH OPHALEN
-
-        for match_id in match_ids:
-
-            match_url = (
-                f"https://europe.api.riotgames.com/"
-                f"lol/match/v5/matches/{match_id}"
-            )
-
-            match_response = requests.get(
-                match_url,
-                headers=headers
-            )
-
-            if match_response.status_code != 200:
-                continue
-
-            match_data = match_response.json()
-
-            participants = match_data["info"]["participants"]
-
-
-            # ALLE 10 SPELERS OPSLAAN
-
-            players = []
-
-            for participant in participants:
-
-                player_champion = participant["championName"]
-
-                player = {
-                    "name": participant.get(
-                        "riotIdGameName",
-                        participant.get(
-                            "summonerName",
-                            "Unknown"
-                        )
-                    ),
-
-                    "tag": participant.get(
-                        "riotIdTagline",
-                        ""
-                    ),
-
-                    "champion": player_champion,
-
-                    "champion_image": (
-                        "https://ddragon.leagueoflegends.com/"
-                        "cdn/16.18.1/img/champion/"
-                        f"{player_champion}.png"
-                    ),
-
-                    "kills": participant["kills"],
-                    "deaths": participant["deaths"],
-                    "assists": participant["assists"],
-
-                    "team": participant["teamId"]
-                }
-
-                players.append(player)
-
-
-            # GEZOCHTE SPELER IN MATCH VINDEN
-
-            for participant in participants:
-
-                if participant["puuid"] == puuid:
-
-                    champion = participant["championName"]
-
-                    kills = participant["kills"]
-                    deaths = participant["deaths"]
-                    assists = participant["assists"]
-
-                    win = participant["win"]
-
-
-                    # KDA BEREKENEN
-
-                    if deaths == 0:
-                        kda = kills + assists
-                    else:
-                        kda = (
-                            kills + assists
-                        ) / deaths
-
-
-                    # CHAMPION IMAGE
-
-                    champion_image = (
-                        "https://ddragon.leagueoflegends.com/"
-                        "cdn/16.18.1/img/champion/"
-                        f"{champion}.png"
-                    )
-
-
-                    # ITEMS VAN DE GEZOCHTE SPELER
-
-                    items = []
-
-                    for item_number in range(7):
-
-                        item_id = participant[
-                            f"item{item_number}"
-                        ]
-
-                        if item_id != 0:
-
-                            item_image = (
-                                "https://ddragon.leagueoflegends.com/"
-                                "cdn/16.18.1/img/item/"
-                                f"{item_id}.png"
-                            )
-
-                            items.append(item_image)
-
-
-                    # MATCH OPSLAAN
-
-                    match = {
-                        "champion": champion,
-                        "champion_image": champion_image,
-
-                        "kills": kills,
-                        "deaths": deaths,
-                        "assists": assists,
-
-                        "kda": round(kda, 2),
-
-                        "win": win,
-
-                        "items": items,
-
-                        "players": players
-                    }
-
-                    matches.append(match)
-
-                    break
-
-
-    return render_template(
-        "index.html",
-        player=player_data,
-        matches=matches,
-        error=error
+    if rank is not None:
+        player_data = {
+            "name": game_name,
+            "tag": tag_line,
+            "tier": rank["tier"],
+            "rank": rank["rank"],
+            "lp": rank["lp"],
+            "wins": rank["wins"],
+            "losses": rank["losses"],
+            "winrate": rank["winrate"]
+        }
+
+    # Gets the last ten matches and adds them to the match history
+    match_ids = get_match_ids(puuid)
+
+    for match_id in match_ids:
+        match_data = get_match(match_id)
+
+        if match_data is None:
+            continue
+
+        match = make_match(match_data, puuid)
+
+        if match is not None:
+            matches.append(match)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "player": player_data,
+            "matches": matches,
+            "error": None
+        }
     )
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True
+    )

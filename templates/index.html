@@ -7,7 +7,7 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
+        href="{{ url_for('static', path='/style.css') }}"
     >
 </head>
 
@@ -17,8 +17,7 @@
 
     <h1>League Tracker</h1>
 
-
-    <!-- SEARCH -->
+    <!-- search -->
 
     <form method="POST">
 
@@ -43,7 +42,7 @@
     </form>
 
 
-    <!-- ERROR -->
+    <!-- err -->
 
     {% if error %}
 
@@ -56,8 +55,7 @@
 
     {% if player %}
 
-
-        <!-- PLAYER INFORMATION -->
+        <!-- player info -->
 
         <div class="player-card">
 
@@ -94,28 +92,23 @@
         </div>
 
 
-        <!-- MATCH HISTORY -->
+        <!-- match history  -->
 
         <h2>
             Recent Matches
         </h2>
 
-
         <div class="match-history">
-
 
             {% for match in matches %}
 
-
                 <div class="match">
 
-
-                    <!-- MAIN MATCH INFORMATION -->
+                    <!-- match information -->
 
                     <div class="match-main">
 
-
-                        <!-- CHAMPION IMAGE -->
+                        <!-- champ image -->
 
                         <img
                             class="champion-image"
@@ -123,8 +116,7 @@
                             alt="{{ match.champion }}"
                         >
 
-
-                        <!-- MATCH STATS -->
+                        <!-- stats match -->
 
                         <div class="match-stats">
 
@@ -147,8 +139,7 @@
 
                         </div>
 
-
-                        <!-- WIN / LOSS -->
+                        <!-- win or loss -->
 
                         {% if match.win %}
 
@@ -164,11 +155,10 @@
 
                         {% endif %}
 
-
                     </div>
 
 
-                    <!-- MATCH DETAILS DROPDOWN -->
+                    <!-- dropdown details -->
 
                     <details class="match-details">
 
@@ -176,13 +166,11 @@
                             Show match details
                         </summary>
 
-
-                        <!-- YOUR ITEMS -->
+                        <!-- player item -->
 
                         <h4>
                             Your Items
                         </h4>
-
 
                         <div class="items">
 
@@ -207,17 +195,15 @@
                         </div>
 
 
-                        <!-- ALL PLAYERS -->
+                        <!-- players -->
 
                         <h4>
                             Players
                         </h4>
 
-
                         <div class="teams">
 
-
-                            <!-- BLUE TEAM -->
+                            <!-- blue -->
 
                             <div class="team">
 
@@ -225,24 +211,16 @@
                                     Blue Team
                                 </h4>
 
-
                                 {% for player in match.players %}
 
                                     {% if player.team == 100 %}
 
-
                                         <div class="match-player">
-
-
-                                            <!-- CHAMPION IMAGE -->
 
                                             <img
                                                 src="{{ player.champion_image }}"
                                                 alt="{{ player.champion }}"
                                             >
-
-
-                                            <!-- PLAYER NAME -->
 
                                             <div class="player-name">
 
@@ -260,15 +238,9 @@
 
                                             </div>
 
-
-                                            <!-- CHAMPION -->
-
                                             <span class="player-champion">
                                                 {{ player.champion }}
                                             </span>
-
-
-                                            <!-- KDA -->
 
                                             <span class="player-kda">
 
@@ -280,9 +252,7 @@
 
                                             </span>
 
-
                                         </div>
-
 
                                     {% endif %}
 
@@ -291,7 +261,7 @@
                             </div>
 
 
-                            <!-- RED TEAM -->
+                            <!-- red -->
 
                             <div class="team">
 
@@ -299,24 +269,16 @@
                                     Red Team
                                 </h4>
 
-
                                 {% for player in match.players %}
 
                                     {% if player.team == 200 %}
 
-
                                         <div class="match-player">
-
-
-                                            <!-- CHAMPION IMAGE -->
 
                                             <img
                                                 src="{{ player.champion_image }}"
                                                 alt="{{ player.champion }}"
                                             >
-
-
-                                            <!-- PLAYER NAME -->
 
                                             <div class="player-name">
 
@@ -334,15 +296,9 @@
 
                                             </div>
 
-
-                                            <!-- CHAMPION -->
-
                                             <span class="player-champion">
                                                 {{ player.champion }}
                                             </span>
-
-
-                                            <!-- KDA -->
 
                                             <span class="player-kda">
 
@@ -354,9 +310,7 @@
 
                                             </span>
 
-
                                         </div>
-
 
                                     {% endif %}
 
@@ -364,24 +318,17 @@
 
                             </div>
 
-
                         </div>
-
 
                     </details>
 
-
                 </div>
-
 
             {% endfor %}
 
-
         </div>
 
-
     {% endif %}
-
 
 </div>
 
